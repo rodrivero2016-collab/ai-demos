@@ -1,0 +1,32 @@
+✈️ AI Travel Planning Agent
+Get a personalized, detailed itinerary in minutes
+🌍 Trip Basics
+Destination *
+Where do you want to go?
+Duration *
+Travel Dates
+Departing From
+For flight recommendations
+👥 Travelers
+Who's Traveling? *
+Number and ages help us customize activities
+Budget Range
+🎨 Preferences
+Interests *
+History & Culture
+Food & Dining
+Beaches & Relaxation
+Adventure & Outdoors
+Shopping
+Nightlife
+Nature & Wildlife
+Art & Museums
+Photography
+Click to select your interests (select at least one)
+Travel Pace
+                                Relaxed - Take it easy
+                                Moderate - Balanced
+                                Fast-paced - See everything
+                            
+Special Requests or Requirements
+🚀 Generate My Personalized Itinerary
