@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Travel Agent - Plan Your Perfect Trip</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e8ba3 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .help-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .interest-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .interest-tag {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .interest-tag.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .itinerary-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            max-height: 800px;
+            overflow-y: auto;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .success-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .main-card {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✈️ AI Travel Planning Agent</h1>
+            <p>Get a personalized, detailed itinerary in minutes</p>
+        </div>
+
+        <div class="main-card">
+            <form id="travelForm">
+                <div class="form-section">
+                    <div class="section-title">🌍 Trip Basics</div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Destination <span class="required">*</span></label>
+                            <input 
+                                type="text" 
+                                name="destination" 
+                                required 
+                                placeholder="e.g., Greece, Japan, Italy"
+                            >
+                            <div class="help-text">Where do you want to go?</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Duration <span class="required">*</span></label>
+                            <input 
+                                type="text" 
+                                name="duration" 
+                                required 
+                                placeholder="e.g., 7 days, 2 weeks"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Travel Dates</label>
+                            <input 
+                                type="text" 
+                                name="dates" 
+                                placeholder="e.g., June 15-22, 2026 or Flexible"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label>Departing From</label>
+                            <input 
+                                type="text" 
+                                name="departureCity" 
+                                placeholder="e.g., Austin, Texas"
+                            >
+                            <div class="help-text">For flight recommendations</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">👥 Travelers</div>
+                    
+                    <div class="form-group">
+                        <label>Who's Traveling? <span class="required">*</span></label>
+                        <input 
+                            type="text" 
+                            name="travelers" 
+                            required 
+                            placeholder="e.g., Family of 4 (2 adults, 2 teens), Solo traveler, Couple"
+                        >
+                        <div class="help-text">Number and ages help us customize activities</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Budget Range</label>
+                        <input 
+                            type="text" 
+                            name="budget" 
+                            placeholder="e.g., $5,000-7,000, Budget-friendly, Luxury"
+                        >
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">🎨 Preferences</div>
+                    
+                    <div class="form-group">
+                        <label>Interests <span class="required">*</span></label>
+                        <div class="interest-tags" id="interestTags">
+                            <div class="interest-tag" data-interest="history">History & Culture</div>
+                            <div class="interest-tag" data-interest="food">Food & Dining</div>
+                            <div class="interest-tag" data-interest="beaches">Beaches & Relaxation</div>
+                            <div class="interest-tag" data-interest="adventure">Adventure & Outdoors</div>
+                            <div class="interest-tag" data-interest="shopping">Shopping</div>
+                            <div class="interest-tag" data-interest="nightlife">Nightlife</div>
+                            <div class="interest-tag" data-interest="nature">Nature & Wildlife</div>
+                            <div class="interest-tag" data-interest="art">Art & Museums</div>
+                            <div class="interest-tag" data-interest="photography">Photography</div>
+                        </div>
+                        <div class="help-text">Click to select your interests (select at least one)</div>
+                        <input type="hidden" name="interests" id="interestsInput" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Travel Pace</label>
+                            <select name="pace">
+                                <option value="relaxed">Relaxed - Take it easy</option>
+                                <option value="moderate" selected>Moderate - Balanced</option>
+                                <option value="fast">Fast-paced - See everything</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Special Requests or Requirements</label>
+                        <textarea 
+                            name="specialRequests" 
+                            placeholder="Any dietary restrictions, accessibility needs, must-see attractions, or other special requests?"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" id="submitBtn">
+                    🚀 Generate My Personalized Itinerary
+                </button>
+            </form>
+
+            <div id="result" class="result-section">
+                <div id="resultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Interest tag selection
+        const selectedInterests = new Set();
+        
+        document.querySelectorAll('.interest-tag').forEach(tag => {
+            tag.addEventListener('click', () => {
+                const interest = tag.dataset.interest;
+                
+                if (selectedInterests.has(interest)) {
+                    selectedInterests.delete(interest);
+                    tag.classList.remove('selected');
+                } else {
+                    selectedInterests.add(interest);
+                    tag.classList.add('selected');
+                }
+                
+                document.getElementById('interestsInput').value = Array.from(selectedInterests).join(',');
+            });
+        });
+
+        // Form submission
+        document.getElementById('travelForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Validate interests selected
+            if (selectedInterests.size === 0) {
+                alert('Please select at least one interest!');
+                return;
+            }
+
+            const formData = new FormData(e.target);
+            const data = {
+                destination: formData.get('destination'),
+                travelers: formData.get('travelers'),
+                duration: formData.get('duration'),
+                dates: formData.get('dates') || 'Flexible',
+                budget: formData.get('budget') || 'Moderate budget',
+                departureCity: formData.get('departureCity') || 'United States',
+                interests: Array.from(selectedInterests),
+                pace: formData.get('pace'),
+                specialRequests: formData.get('specialRequests')
+            };
+
+            const submitBtn = document.getElementById('submitBtn');
+            const resultDiv = document.getElementById('result');
+            const resultContent = document.getElementById('resultContent');
+
+            // Show loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = '✈️ AI Agent Planning Your Trip...';
+            resultDiv.classList.add('show');
+            resultContent.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p><strong>AI is creating your personalized itinerary...</strong></p>
+                    <p>Researching flights, hotels, activities, and creating your custom plan</p>
+                    <p style="margin-top: 15px; color: #666;">This usually takes 60-90 seconds</p>
+                </div>
+            `;
+
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            const startTime = Date.now();
+
+            try {
+                // Updated to deployed API
+                const API_URL = 'https://ai-travel-agent-api.onrender.com/api/plan-trip';
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+
+                if (result.success) {
+                    const formattedItinerary = formatItinerary(result.itinerary);
+                    
+                    resultContent.innerHTML = `
+                        <div class="success-badge">✅ Itinerary Generated Successfully!</div>
+                        <h2 style="color: #667eea; margin-bottom: 20px;">
+                            ✈️ Your ${result.destination} Trip Plan
+                        </h2>
+                        <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                            <strong>Trip Summary:</strong><br>
+                            👥 ${result.summary.travelers}<br>
+                            📅 ${result.summary.duration} • ${result.summary.dates}<br>
+                            💰 ${result.summary.budget}<br>
+                            🎯 Interests: ${result.summary.interests}
+                        </div>
+                        <div class="itinerary-content" id="itineraryOutput">${formattedItinerary}</div>
+                        <div style="background: #e9ecef; padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 14px; color: #666;">
+                            <strong>Generation Details:</strong><br>
+                            Generated: ${new Date().toLocaleString()}<br>
+                            Time taken: ${duration} seconds<br>
+                            Cost: ${result.metadata.estimatedCost}
+                        </div>
+                        <div class="action-buttons">
+                            <button onclick="copyItinerary()" class="btn btn-secondary">
+                                📋 Copy Itinerary
+                            </button>
+                            <button onclick="downloadItinerary()" class="btn btn-secondary">
+                                📥 Download as Text
+                            </button>
+                            <button onclick="emailItinerary()" class="btn btn-secondary">
+                                📧 Email to Family
+                            </button>
+                            <button onclick="resetForm()" class="btn">
+                                ✨ Plan Another Trip
+                            </button>
+                        </div>
+                    `;
+
+                    // Store for actions
+                    window.currentItinerary = {
+                        text: result.itinerary,
+                        destination: result.destination
+                    };
+                } else {
+                    throw new Error(result.message || 'Unknown error');
+                }
+            } catch (error) {
+                resultDiv.classList.add('error');
+                resultContent.innerHTML = `
+                    <h2>❌ Error</h2>
+                    <p><strong>Something went wrong:</strong></p>
+                    <p>${error.message}</p>
+                    <br>
+                    <p><strong>Troubleshooting:</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+                        <li>Make sure the API server is running</li>
+                        <li>Check your internet connection</li>
+                        <li>All required fields should be filled</li>
+                        <li>If problem persists, contact support</li>
+                    </ul>
+                    <button onclick="resetForm()" class="btn" style="margin-top: 20px;">
+                        🔄 Try Again
+                    </button>
+                `;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 Generate My Personalized Itinerary';
+            }
+        });
+
+        function formatItinerary(text) {
+            return text
+                .replace(/\n/g, '<br>')
+                .replace(/### (.*?)<br>/g, '<h3>$1</h3>')
+                .replace(/## (.*?)<br>/g, '<h2>$1</h2>')
+                .replace(/# (.*?)<br>/g, '<h1>$1</h1>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        }
+
+        function copyItinerary() {
+            if (!window.currentItinerary) return;
+            navigator.clipboard.writeText(window.currentItinerary.text).then(() => {
+                alert('✅ Itinerary copied to clipboard!');
+            }).catch(() => {
+                alert('❌ Failed to copy. Please select and copy manually.');
+            });
+        }
+
+        function downloadItinerary() {
+            if (!window.currentItinerary) return;
+            const blob = new Blob([window.currentItinerary.text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${window.currentItinerary.destination}_Itinerary.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function emailItinerary() {
+            if (!window.currentItinerary) return;
+            const subject = `Our ${window.currentItinerary.destination} Trip Plan!`;
+            const body = encodeURIComponent(window.currentItinerary.text);
+            window.open(`mailto:?subject=${subject}&body=${body}`);
+        }
+
+        function resetForm() {
+            document.getElementById('travelForm').reset();
+            document.getElementById('result').classList.remove('show');
+            selectedInterests.clear();
+            document.querySelectorAll('.interest-tag').forEach(tag => tag.classList.remove('selected'));
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
