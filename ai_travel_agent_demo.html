@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Travel Agent Demo - See How AI Agents Work</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e8ba3 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero {
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+            margin-bottom: 40px;
+        }
+
+        .hero h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero p {
+            font-size: 1.3em;
+            opacity: 0.95;
+            margin-bottom: 10px;
+        }
+
+        .hero .tagline {
+            font-size: 1.1em;
+            opacity: 0.85;
+            font-style: italic;
+        }
+
+        .demo-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .scenario {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .scenario h2 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .scenario-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .detail-item {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .detail-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .start-demo-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .start-demo-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .agent-workspace {
+            display: none;
+        }
+
+        .agent-workspace.active {
+            display: block;
+        }
+
+        .thinking-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .pulse {
+            width: 12px;
+            height: 12px;
+            background: #4caf50;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+        }
+
+        .thinking-steps {
+            margin-bottom: 30px;
+        }
+
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.5s;
+        }
+
+        .step.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .step.completed {
+            border-left-color: #4caf50;
+            background: #e8f5e9;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .step-icon {
+            font-size: 1.5em;
+        }
+
+        .step-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .step-content {
+            margin-left: 40px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .step-result {
+            margin-top: 10px;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            font-size: 0.95em;
+        }
+
+        .final-plan {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .final-plan.visible {
+            display: block;
+            animation: slideIn 0.5s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .plan-header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 30px;
+        }
+
+        .plan-header h2 {
+            font-size: 2em;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .itinerary-day {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .day-header {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .activity {
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid #667eea;
+        }
+
+        .activity-time {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .activity-details {
+            font-size: 0.95em;
+            color: #666;
+        }
+
+        .travel-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .detail-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .detail-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-card ul {
+            list-style: none;
+        }
+
+        .detail-card li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .detail-card li:last-child {
+            border-bottom: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .calendar-preview {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .calendar-preview h3 {
+            margin-bottom: 10px;
+        }
+
+        .highlight-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .highlight-box h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2em;
+            }
+            
+            .demo-card {
+                padding: 20px;
+            }
+            
+            .scenario-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>🤖 See How AI Agents Work</h1>
+            <p>Watch an AI agent plan a complete family vacation to Greece</p>
+            <p class="tagline">From research to booking-ready itinerary in 60 seconds</p>
+        </div>
+
+        <div class="demo-card">
+            <div class="scenario">
+                <h2>👨‍👩‍👦‍👦 Meet Sarah's Family</h2>
+                <p>Sarah wants to plan the perfect 7-day Greece vacation for her family of four. She needs help with flights, hotels, activities, and logistics. Watch how an AI agent handles this complex planning task...</p>
+                
+                <div class="scenario-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Family</div>
+                        <div class="detail-value">Sarah, Mark, & 2 sons (ages 19, 21)</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Dates</div>
+                        <div class="detail-value">June 15-22, 2026</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Budget</div>
+                        <div class="detail-value">$8,000 - $10,000</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Departing From</div>
+                        <div class="detail-value">Austin, Texas</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Interests</div>
+                        <div class="detail-value">History, Food, Beaches</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Pace</div>
+                        <div class="detail-value">Relaxed with culture</div>
+                    </div>
+                </div>
+
+                <button class="start-demo-btn" onclick="startDemo()">
+                    ▶️ Watch AI Agent Plan This Trip
+                </button>
+            </div>
+
+            <div class="agent-workspace" id="agentWorkspace">
+                <div class="thinking-header">
+                    <div class="pulse"></div>
+                    <div>
+                        <h2 style="margin-bottom: 5px;">🤖 AI Agent Working</h2>
+                        <p style="opacity: 0.9; font-size: 0.95em;">Multi-step reasoning and planning in progress...</p>
+                    </div>
+                </div>
+
+                <div class="thinking-steps" id="thinkingSteps"></div>
+
+                <div class="final-plan" id="finalPlan">
+                    <div class="plan-header">
+                        <h2>✨ Complete Greece Vacation Plan</h2>
+                        <p style="color: #666;">7 days • Athens & Santorini • June 15-22, 2026</p>
+                    </div>
+
+                    <div class="travel-details">
+                        <div class="detail-card">
+                            <h3>✈️ Flights</h3>
+                            <ul>
+                                <li><strong>Outbound:</strong> June 15, 2026<br>Austin (AUS) → Athens (ATH)<br>via Munich • Lufthansa<br>$1,250/person</li>
+                                <li><strong>Return:</strong> June 22, 2026<br>Athens (ATH) → Austin (AUS)<br>via Frankfurt • Lufthansa<br>Total: $5,000 for 4</li>
+                            </ul>
+                        </div>
+
+                        <div class="detail-card">
+                            <h3>🏨 Accommodations</h3>
+                            <ul>
+                                <li><strong>Athens (3 nights):</strong><br>Hotel Grande Bretagne<br>2 connected rooms<br>$450/night • $1,350 total</li>
+                                <li><strong>Santorini (3 nights):</strong><br>Cave Suite with caldera view<br>$550/night • $1,650 total<br><strong>Total lodging: $3,000</strong></li>
+                            </ul>
+                        </div>
+
+                        <div class="detail-card">
+                            <h3>💰 Budget Breakdown</h3>
+                            <ul>
+                                <li>Flights: $5,000</li>
+                                <li>Hotels: $3,000</li>
+                                <li>Activities: $800</li>
+                                <li>Meals: $1,000</li>
+                                <li>Transportation: $200</li>
+                                <li><strong>Total: $10,000</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 40px; margin-bottom: 20px; color: #667eea;">📅 Day-by-Day Itinerary</h3>
+
+                    <div class="itinerary-day">
+                        <div class="day-header">📍 Day 1 - June 15: Arrival in Athens</div>
+                        <div class="activity">
+                            <div class="activity-time">3:00 PM</div>
+                            <div class="activity-title">Arrive Athens International Airport</div>
+                            <div class="activity-details">Private transfer to Hotel Grande Bretagne (pre-booked, €80)</div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-time">5:00 PM</div>
+                            <div class="activity-title">Hotel Check-in & Relax</div>
+                            <div class="activity-details">2 connected rooms with Acropolis views</div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-time">7:30 PM</div>
+                            <div class="activity-title">Welcome Dinner in Plaka</div>
+                            <div class="activity-details">Traditional Greek taverna - Klimataria (reservation recommended)</div>
+                        </div>
+                    </div>
+
+                    <div class="itinerary-day">
+                        <div class="day-header">📍 Day 2 - June 16: Ancient Athens</div>
+                        <div class="activity">
+                            <div class="activity-time">9:00 AM</div>
+                            <div class="activity-title">Acropolis & Parthenon Tour</div>
+                            <div class="activity-details">Skip-the-line guided tour (3 hours, €45/person, $180 total)<br>Pro tip: Bring water and sun protection</div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-time">1:00 PM</div>
+                            <div class="activity-title">Lunch at Acropolis Museum Café</div>
+                            <div class="activity-details">Views of the Parthenon while you eat</div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-time">3:00 PM</div>
+                            <div class="activity-title">Temple of Olympian Zeus & Panathenaic Stadium</div>
+                            <div class="activity-details">Self-guided exploration (€12/person)</div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-time">7:00 PM</div>
+                            <div class="activity-title">Dinner with Acropolis View</div>
+                            <div class="activity-details">Strofi Restaurant (rooftop dining)</div>
+                        </div>
+                    </div>
+
+                    <div class="itinerary-day">
+                        <div class="day-header">📍 Day 3 - June 17: Athens Markets & Culture</div>
+                        <div class="activity">
+                            <div class="activity-time">10:00 AM</div>
+                            <div class="activity-title">Athens Food Tour</div>
+                            <div class="activity-details">4-hour walking food tour through markets ($70/person, $280 total)<br>Taste souvlaki, baklava, Greek coffee & more</div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-time">3:00 PM</div>
+                            <div class="activity-title">Free Time: Syntagma Square & Shopping</div>
+                            <div class="activity-details">Watch the changing of the guard, explore Ermou Street</div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-time">6:00 PM</div>
+                            <div class="activity-title">Sunset at Lycabettus Hill</div>
+                            <div class="activity-details">Funicular ride up (€7.50/person), watch sunset over Athens</div>
+                        </div>
+                    </div>
+
+                    <div class="itinerary-day">
+                        <div class="day-header">📍 Day 4 - June 18: Travel to Santorini</div>
+                        <div class="activity">
+                            <div class="activity-time">9:30 AM</div>
+                            <div class="activity-title">Hotel Checkout</div>
+                            <div class="activity-details">Private transfer to Piraeus Port (€60)</div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-time">12:00 PM</div>
+                            <div class="activity-title">Ferry to Santorini</div>
+                            <div class="activity-details">High-speed ferry (5 hours, €80/person, $320 total)<br>Book Blue Star Ferries - most reliable</div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-time">5:00 PM</div>
+                            <div class="activity-title">Arrive Santorini & Transfer to Oia</div>
+                            <div class="activity-details">Hotel pickup included with accommodation</div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-time">8:00 PM</div>
+                            <div class="activity-title">Sunset Dinner in Oia</div>
+                            <div class="activity-details">Ammoudi Fish Tavern (waterfront dining)</div>
+                        </div>
+                    </div>
+
+                    <div class="itinerary-day">
+                        <div class="day-header">📍 Day 5 - June 19: Explore Santorini</div>
+                        <div class="activity">
+                            <div class="activity-time">10:00 AM</div>
+                            <div class="activity-title">Red Beach & Ancient Akrotiri</div>
+                            <div class="activity-details">Rent ATV for the day (€50/day for 2 ATVs, $100 total)<br>Explore at your own pace</div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-time">2:00 PM</div>
+                            <div class="activity-title">Lunch in Perissa</div>
+                            <div class="activity-details">Black sand beach restaurant</div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-time">4:00 PM</div>
+                            <div class="activity-title">Wine Tasting Tour</div>
+                            <div class="activity-details">Visit 3 wineries (€60/person, $240 total)<br>Santo Wines, Venetsanos Winery</div>
+                        </div>
+                    </div>
+
+                    <div class="itinerary-day">
+                        <div class="day-header">📍 Day 6 - June 20: Sailing & Relaxation</div>
+                        <div class="activity">
+                            <div class="activity-time">10:00 AM</div>
+                            <div class="activity-title">Private Catamaran Cruise</div>
+                            <div class="activity-details">Full-day sailing around caldera ($600 for 4 people)<br>Includes: Hot springs, BBQ lunch, snorkeling, sunset viewing</div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-time">7:00 PM</div>
+                            <div class="activity-title">Return to Hotel & Relax</div>
+                            <div class="activity-details">Enjoy hotel cave suite and private terrace</div>
+                        </div>
+                    </div>
+
+                    <div class="itinerary-day">
+                        <div class="day-header">📍 Day 7 - June 21: Last Day & Departure Prep</div>
+                        <div class="activity">
+                            <div class="activity-time">9:00 AM</div>
+                            <div class="activity-title">Morning in Fira</div>
+                            <div class="activity-details">Last-minute shopping, cable car ride (€6/person)</div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-time">12:00 PM</div>
+                            <div class="activity-title">Lunch with Caldera View</div>
+                            <div class="activity-details">Farewell meal at PK Cocktail Bar</div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-time">3:00 PM</div>
+                            <div class="activity-title">Ferry Back to Athens</div>
+                            <div class="activity-details">High-speed ferry (5 hours, $320)<br>Overnight near airport for early flight</div>
+                        </div>
+                    </div>
+
+                    <div class="itinerary-day">
+                        <div class="day-header">📍 Day 8 - June 22: Return Home</div>
+                        <div class="activity">
+                            <div class="activity-time">6:00 AM</div>
+                            <div class="activity-title">Airport Transfer & Flight Home</div>
+                            <div class="activity-details">Athens → Austin via Frankfurt<br>Total travel time: ~18 hours</div>
+                        </div>
+                    </div>
+
+                    <div class="calendar-preview">
+                        <h3>📱 Ready to Share!</h3>
+                        <p style="margin-bottom: 15px;">This itinerary can be exported to:</p>
+                        <p><strong>✓ Google Calendar  ✓ Apple Calendar  ✓ Outlook</strong></p>
+                        <p style="margin-top: 10px; font-size: 0.95em; opacity: 0.9;">
+                            Sarah can share this with Mark and their sons - everyone's calendars automatically updated with all activities, reservations, and travel times!
+                        </p>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>💡 What Just Happened?</h3>
+                        <p><strong>The AI agent autonomously:</strong></p>
+                        <ul style="margin-left: 20px; margin-top: 10px; line-height: 2;">
+                            <li>✓ Researched optimal flight routes and pricing</li>
+                            <li>✓ Analyzed 100+ hotels to find perfect matches</li>
+                            <li>✓ Created a culturally-rich itinerary based on family interests</li>
+                            <li>✓ Optimized logistics (timing, transportation, reservations)</li>
+                            <li>✓ Stayed within budget while maximizing experience</li>
+                            <li>✓ Generated shareable, actionable outputs</li>
+                        </ul>
+                        <p style="margin-top: 15px;"><strong>⏱️ Total time: 60 seconds</strong></p>
+                        <p style="margin-top: 10px; font-size: 0.95em; color: #856404;">
+                            <strong>Business Application:</strong> Imagine this same AI agent power applied to your business processes - procurement, project planning, customer service, research, and more!
+                        </p>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="location.reload()">
+                            🔄 Run Demo Again
+                        </button>
+                        <button class="btn btn-secondary" onclick="alert('Contact: info@cumcorde.com\nLet\'s discuss how AI agents can transform your business!')">
+                            💼 Apply This to My Business
+                        </button>
+                        <button class="btn btn-secondary" onclick="window.open('mailto:?subject=Check out this AI Agent Demo&body=I found this amazing AI agent demo that plans a complete vacation in 60 seconds: ' + window.location.href)">
+                            📧 Share This Demo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const steps = [
+            {
+                icon: '🎯',
+                title: 'Analyzing Requirements',
+                content: 'Processing family size, dates, budget ($8-10K), interests (history, food, beaches), and departure city (Austin)...',
+                result: 'Requirements validated. Optimal trip: 7 days, split between Athens (history/food) and Santorini (beaches/views).',
+                duration: 3000
+            },
+            {
+                icon: '✈️',
+                title: 'Researching Flights',
+                content: 'Scanning 47 flight options from Austin to Athens. Analyzing: price, duration, connections, airline reliability...',
+                result: 'Best option found: Lufthansa via Munich. $1,250/person, reasonable layover, excellent reviews. Total: $5,000 for 4.',
+                duration: 4000
+            },
+            {
+                icon: '🏨',
+                title: 'Finding Perfect Accommodations',
+                content: 'Analyzing 156 hotels in Athens and 89 in Santorini. Filtering by: family-friendly, location, reviews, amenities, budget...',
+                result: 'Athens: Hotel Grande Bretagne (5-star, central, $450/night). Santorini: Cave suite with caldera view ($550/night). Total: $3,000.',
+                duration: 5000
+            },
+            {
+                icon: '📅',
+                title: 'Building Custom Itinerary',
+                content: 'Designing 7-day schedule based on interests. Balancing: historical sites, culinary experiences, beach time, and relaxation. Optimizing logistics...',
+                result: 'Created 8-day itinerary: 3 days Athens (Acropolis, food tours, markets), 4 days Santorini (beaches, sailing, wine tasting), optimal pacing.',
+                duration: 6000
+            },
+            {
+                icon: '🍽️',
+                title: 'Selecting Restaurants & Activities',
+                content: 'Matching 200+ restaurants to family tastes. Selecting activities for history buffs and young adults. Researching local experiences...',
+                result: 'Curated: 15 restaurant recommendations, 12 activities, food tour, catamaran cruise. Budget allocated: $1,800.',
+                duration: 4000
+            },
+            {
+                icon: '🚗',
+                title: 'Arranging Transportation',
+                content: 'Planning airport transfers, inter-city travel (ferry vs. flight), local transportation. Optimizing convenience and cost...',
+                result: 'Arranged: Private airport transfers, high-speed ferry Athens→Santorini, ATV rental for island exploration. Total: $200.',
+                duration: 3000
+            },
+            {
+                icon: '💰',
+                title: 'Optimizing Budget',
+                content: 'Final budget analysis. Cross-checking all expenses. Looking for optimization opportunities while maintaining quality...',
+                result: 'Total: $10,000 (within budget!). Breakdown: Flights $5K, Hotels $3K, Activities $800, Meals $1K, Transport $200.',
+                duration: 3000
+            },
+            {
+                icon: '✅',
+                title: 'Generating Deliverables',
+                content: 'Creating shareable itinerary, booking recommendations, budget breakdown, and calendar events...',
+                result: 'Complete plan ready! Includes: day-by-day itinerary, all booking links, calendar exports, and sharing options.',
+                duration: 2000
+            }
+        ];
+
+        let currentStep = 0;
+
+        function startDemo() {
+            document.getElementById('agentWorkspace').classList.add('active');
+            document.querySelector('.scenario').style.opacity = '0.5';
+            document.querySelector('.start-demo-btn').disabled = true;
+            
+            // Scroll to workspace
+            document.getElementById('agentWorkspace').scrollIntoView({ behavior: 'smooth' });
+            
+            setTimeout(() => {
+                showNextStep();
+            }, 500);
+        }
+
+        function showNextStep() {
+            if (currentStep >= steps.length) {
+                setTimeout(() => {
+                    document.getElementById('finalPlan').classList.add('visible');
+                    document.getElementById('finalPlan').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 1000);
+                return;
+            }
+
+            const step = steps[currentStep];
+            const stepEl = document.createElement('div');
+            stepEl.className = 'step';
+            stepEl.innerHTML = `
+                <div class="step-header">
+                    <span class="step-icon">${step.icon}</span>
+                    <span class="step-title">${step.title}</span>
+                </div>
+                <div class="step-content">
+                    ${step.content}
+                    <div class="step-result" style="display: none;">${step.result}</div>
+                </div>
+            `;
+
+            document.getElementById('thinkingSteps').appendChild(stepEl);
+            
+            // Animate in
+            setTimeout(() => {
+                stepEl.classList.add('visible');
+            }, 100);
+
+            // Show result after duration
+            setTimeout(() => {
+                stepEl.querySelector('.step-result').style.display = 'block';
+                stepEl.classList.add('completed');
+                currentStep++;
+                setTimeout(() => showNextStep(), 500);
+            }, step.duration);
+        }
+    </script>
+</body>
+</html>
